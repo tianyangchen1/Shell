@@ -1,31 +1,33 @@
 #!/usr/bin/env bash
+# chkconfig: 2345 90 10
+# description: A Stable & Secure Tunnel Based On KCP with N:M Multiplexing
 
 ### BEGIN INIT INFO
-# Provides:          Shadowsocks-libev
-# Required-Start:    $network $local_fs $remote_fs
-# Required-Stop:     $network $local_fs $remote_fs
+# Provides:          kcptun
+# Required-Start:    $network $syslog
+# Required-Stop:     $network
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Fast tunnel proxy that helps you bypass firewalls
-# Description:       Start or stop the Shadowsocks-libev server
+# Short-Description: It can help you improve network speed
+# Description:       Start or stop the  kcptun server
 ### END INIT INFO
 
 
-if [ -f /usr/local/bin/ss-server ]; then
-    DAEMON=/usr/local/bin/ss-server
-elif [ -f /usr/bin/ss-server ]; then
-    DAEMON=/usr/bin/ss-server
+if [ -f /usr/local/kcptun/kcptun-server ]; then
+    DAEMON=/usr/local/kcptun/kcptun-server
+elif [ -f /usr/bin/kcptun-server ]; then
+    DAEMON=/usr/bin/kcptun-server
 fi
-NAME=Shadowsocks-libev
-CONF=/etc/shadowsocks-libev/config.json
+NAME=kcptun-server
+CONF=/etc/kcptun/config.json
 PID_DIR=/var/run
-PID_FILE=$PID_DIR/shadowsocks-libev.pid
+PID_FILE=$PID_DIR/kcptun-server.pid
 RET_VAL=0
 
 [ -x $DAEMON ] || exit 0
 
 check_pid(){
-	get_pid=`ps -ef |grep -v grep | grep ss-server |awk '{print $2}'`
+	get_pid=`ps -ef |grep -v grep | grep $NAME |awk '{print $2}'`
 }
 
 check_pid
@@ -48,6 +50,7 @@ if [ ! -f $CONF ]; then
     exit 1
 fi
 
+
 check_running() {
     if [ -e $PID_FILE ]; then
         if [ -r $PID_FILE ]; then
@@ -68,7 +71,7 @@ do_status() {
     check_running
     case $? in
         0)
-        echo "$NAME (pid $PID) is running..."
+        echo "$NAME (pid $PID) is running."
         ;;
         1|2)
         echo "$NAME is stopped"
@@ -79,7 +82,7 @@ do_status() {
 
 do_start() {
     if check_running; then
-        echo "$NAME (pid $PID) is already running..."
+        echo "$NAME (pid $PID) is already running."
         return 0
     fi
     $DAEMON -c $CONF > /dev/null 2>&1 &

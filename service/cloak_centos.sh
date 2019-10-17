@@ -1,33 +1,32 @@
 #!/usr/bin/env bash
 # chkconfig: 2345 90 10
-# description: A secure socks5 proxy, designed to protect your Internet traffic.
+# description: A Stable & Secure Tunnel Based On KCP with N:M Multiplexing
 
 ### BEGIN INIT INFO
-# Provides:          Shadowsocks-libev
+# Provides:          cloak
 # Required-Start:    $network $syslog
 # Required-Stop:     $network
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Fast tunnel proxy that helps you bypass firewalls
-# Description:       Start or stop the Shadowsocks-libev server
+# Short-Description: It can help you improve network speed
+# Description:       Start or stop the  cloak server
 ### END INIT INFO
 
 
-if [ -f /usr/local/bin/ss-server ]; then
-    DAEMON=/usr/local/bin/ss-server
-elif [ -f /usr/bin/ss-server ]; then
-    DAEMON=/usr/bin/ss-server
+if [ -f /usr/local/bin/ck-server ]; then
+    DAEMON=/usr/local/bin/ck-server
 fi
-NAME=Shadowsocks-libev
-CONF=/etc/shadowsocks-libev/config.json
+
+NAME=ck-server
+CONF=/etc/cloak/ckserver.json
 PID_DIR=/var/run
-PID_FILE=$PID_DIR/shadowsocks-libev.pid
+PID_FILE=$PID_DIR/$NAME.pid
 RET_VAL=0
 
 [ -x $DAEMON ] || exit 0
 
 check_pid(){
-	get_pid=`ps -ef |grep -v grep | grep ss-server |awk '{print $2}'`
+	get_pid=`ps -ef |grep -v grep | grep $NAME |awk '{print $2}'`
 }
 
 check_pid
@@ -47,8 +46,9 @@ fi
 
 if [ ! -f $CONF ]; then
     echo "$NAME config file $CONF not found"
-     exit 1
+    exit 1
 fi
+
 
 check_running() {
     if [ -e $PID_FILE ]; then
@@ -70,7 +70,7 @@ do_status() {
     check_running
     case $? in
         0)
-        echo "$NAME (pid $PID) is running..."
+        echo "$NAME (pid $PID) is running."
         ;;
         1|2)
         echo "$NAME is stopped"
@@ -81,7 +81,7 @@ do_status() {
 
 do_start() {
     if check_running; then
-        echo "$NAME (pid $PID) is already running..."
+        echo "$NAME (pid $PID) is already running."
         return 0
     fi
     $DAEMON -c $CONF > /dev/null 2>&1 &
